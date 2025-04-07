@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>A Distributed Systems Cluster Simulation Framework</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .node, .pod { border: 1px solid #ccc; margin: 10px 0; padding: 10px; border-radius: 8px; }
+        .header { font-weight: bold; font-size: 18px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <center><h1>Cluster Management Dashboard</h1></center>
+
+    <h2>Add Node</h2>
+    
+      
+    <form action="/add_node" method="post">
+        <label>CPU Cores: <input name="cpu_cores" type="number" min="1" required></label>
+        <button type="submit">Add Node</button>
+    </form>
+
+    <h2>Launch Pod</h2>
+    <form action="/launch_pod" method="post">
+        <label>CPU Request: <input name="cpu_request" type="number" min="1" required></label>
+        <button type="submit">Launch Pod</button>
+    </form>
+
+    <h2>Nodes</h2>
+    {% for node_id, node in nodes.items() %}
+    
+    <div class="node">
+        <div class="header">Node ID: {{ node_id }}</div>
+        <p>Status: {{ node.status }}</p>
+        <p>CPU Cores: {{ node.cpu_cores }}</p>
+        <p>Pods Assigned: {{ node.pods }}</p>
+        <form action="/stop_node/{{ node_id }}" method="post" onsubmit="return confirm('Are you sure?');">
+            <input type="hidden" name="_method" value="DELETE">
+            <button type="submit">Remove Node</button>
+        </form>
+    </div>
+    {% endfor %}
+
+    <h2>Pods</h2>
+    {% for pod_id, pod in pods.items() %}
+    <div class="pod">
+        <div class="header">Pod ID: {{ pod_id }}</div>
+        <p>Assigned Node: {{ pod.node_id }}</p>
+        <p>CPU Request: {{ pod.cpu_request }}</p>
+    </div>
+    {% endfor %}
+
+    <script>
+        // Support DELETE method for forms
+        document.querySelectorAll('form').forEach(form => {
+            if (form.querySelector('input[name=\"_method\"][value=\"DELETE\"]')) {
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const res = await fetch(form.action, {
+                        method: 'DELETE',
+                    });
+                    if (res.ok) location.reload();
+                    else alert('Failed to delete node.');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
